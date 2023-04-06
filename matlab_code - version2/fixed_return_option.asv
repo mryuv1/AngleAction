@@ -1,0 +1,358 @@
+
+clc;
+clear;
+close all;
+
+%% variables
+
+parameters = params();
+w1 = parameters.w1;
+w2 = parameters.w2;
+Et = parameters.Et;
+Ex = parameters.Ex;
+Ey = Et - Ex;
+circle_center = parameters.circle_center;
+radius = parameters.radius;
+limit_number_of_round_hits = parameters.limit_number_of_round_hits;
+%boolian for limiting number of hits
+number_of_round_hits_treshold = parameters.number_of_round_hits_treshold;
+
+min_possible_Ex = 0.5*(parameters.w1*(parameters.circle_center(1) + parameters.radius))^2;
+min_possible_Ey = 0.5*(parameters.w2*(parameters.circle_center(2) + parameters.radius))^2;
+max_possible_Ex = Et - min_possible_Ey;
+max_possible_Ey = Et - min_possible_Ex;
+
+max_py = sqrt(2*Et);
+max_y = sqrt(2*Et)/w2;
+%% check for one point
+
+% r = 0.2;
+% x_w = -0.4;
+% y_w = -0.6;
+
+% make line
+
+% ys = linspace(-1,y_w, 1000);
+% x = ones(1,1000)*(-0.4);
+% slope = ones(1,1000)*(inf);
+% w = [x.' ys.' slope.'];
+
+% Ex_min = 0.5*(w1^2)*(x_w^2);
+% EY_min = 0.5*(w2^2)*(y_w^2);
+numberOfenergies = 1e2;
+% E_x = Ex_min:0.05:Et;
+
+
+vertical_step = create_vertical_line(circle_center(2) + radius, [-3 circle_center(1)], 1e2);
+horizontal_step = create_horizontal_line(circle_center(1) + radius, [-3 circle_center(2)], 1e2);
+coords_circ = create_cuarter_circle(circle_center, radius, 2e2);
+
+w0 = [w1, w2];
+
+
+parameters.Ex = max_possible_Ex*(7/8);
+parameters.Ey = parameters.Et - parameters.Ex;
+
+[e1_horz_results_preHit, e1_horz_results_postHit,...
+    e1_horz_final_E_preHit, e1_horz_final_E_postHit,...
+    e1_horz_initial_conditions_preHit, e1_horz_initial_conditions_postHit,...
+                        e1_horz_NumberOfHits] ...
+                        = get_hit_map_yPy(horizontal_step, parameters);
+[e1_circ_results_preHit, e1_circ_results_postHit,...
+    e1_circ__final_E_preHit, e1_circ_final_E_postHit,...
+    e1_circ_initial_conditions_preHit, e1_circ_initial_conditions_postHit,...
+    e1_circ_NumberOfHits] ...
+                        = get_hit_map_yPy(coords_circ, parameters);
+[e1_ver_results_preHit, e1_ver_results_postHit,...
+    e1_ver_final_E_preHit, e1_ver_final_E_postHit,...
+    e1_ver_initial_conditions_preHit, e1_ver_initial_conditions_postHit,...
+    e1_ver_NumberOfHits] ...
+                        = get_hit_map_yPy(vertical_step, parameters);
+
+
+% if energy isn't conserved
+assert(var((e1_horz_final_E_preHit - e1_horz_final_E_postHit)./Et)<1e-5, "The horz Energy is NOT conserved");
+assert(var((e1_circ__final_E_preHit - e1_circ_final_E_postHit)./Et)<1e-5, "The circ Energy is NOT conserved");
+assert(var((e1_ver_final_E_preHit - e1_ver_final_E_postHit)./Et)<1e-5, "The ver Energy is NOT conserved");
+
+Energy_Y_line_coords_energy1 = calcY_Energy_level(parameters);
+
+parameters.Ex = max_possible_Ex*(6/8);
+parameters.Ey = parameters.Et - parameters.Ex;
+Energy_Y_line_coords_energy2 = calcY_Energy_level(parameters);
+
+[e2_horz_results_preHit, e2_horz_results_postHit,...
+    e2_horz_final_E_preHit, e2_horz_final_E_postHit,...
+    e2_horz_initial_conditions_preHit, e2_horz_initial_conditions_postHit,...
+    e2_horz_NumberOfHits] ...
+                        = get_hit_map_yPy(horizontal_step, parameters);
+[e2_circ_results_preHit, e2_circ_results_postHit,...
+    e2_circ__final_E_preHit, e2_circ_final_E_postHit,...
+    e2_circ_initial_conditions_preHit, e2_circ_initial_conditions_postHit,...
+    e2_circ_NumberOfHits] ...
+                        = get_hit_map_yPy(coords_circ, parameters);
+[e2_ver_results_preHit, e2_ver_results_postHit,...
+    e2_ver_final_E_preHit, e2_ver_final_E_postHit,...
+    e2_ver_initial_conditions_preHit, e2_ver_initial_conditions_postHit,...
+    e2_ver_NumberOfHits] ...
+                        = get_hit_map_yPy(vertical_step, parameters);
+
+
+parameters.Ex = max_possible_Ex*(4/8);
+parameters.Ey = parameters.Et - parameters.Ex;
+Energy_Y_line_coords_energy3 = calcY_Energy_level(parameters);
+
+[e3_horz_results_preHit, e3_horz_results_postHit,...
+    e3_horz_final_E_preHit, e3_horz_final_E_postHit,...
+    e3_horz_initial_conditions_preHit, e3_horz_initial_conditions_postHit,...
+    e3_horz_NumberOfHits] ...
+                        = get_hit_map_yPy(horizontal_step, parameters);
+[e3_circ_results_preHit, e3_circ_results_postHit,...
+    e3_circ__final_E_preHit, e3_circ_final_E_postHit,...
+    e3_circ_initial_conditions_preHit, e3_circ_initial_conditions_postHit,...
+    e3_circ_NumberOfHits] ...
+                        = get_hit_map_yPy(coords_circ, parameters);
+[e3_ver_results_preHit, e3_ver_results_postHit,...
+    e3_ver_final_E_preHit, e3_ver_final_E_postHit,...
+    e3_ver_initial_conditions_preHit, e3_ver_initial_conditions_postHit,...
+    e3_ver_NumberOfHits] ...
+                        = get_hit_map_yPy(vertical_step, parameters);
+
+parameters.Ex = max_possible_Ex*(2/8);
+parameters.Ey = parameters.Et - parameters.Ex;
+Energy_Y_line_coords_energy4 = calcY_Energy_level(parameters);
+
+[e4_horz_results_preHit, e4_horz_results_postHit,...
+    e4_horz_final_E_preHit, e4_horz_final_E_postHit,...
+    e4_horz_initial_conditions_preHit, e4_horz_initial_conditions_postHit,...
+    e4_horz_NumberOfHits] ...
+                        = get_hit_map_yPy(horizontal_step, parameters);
+[e4_circ_results_preHit, e4_circ_results_postHit,...
+    e4_circ__final_E_preHit, e4_circ_final_E_postHit,...
+    e4_circ_initial_conditions_preHit, e4_circ_initial_conditions_postHit,...
+    e4_circ_NumberOfHits] ...
+                        = get_hit_map_yPy(coords_circ, parameters);
+[e4_ver_results_preHit, e4_ver_results_postHit,...
+    e4_ver_final_E_preHit, e4_ver_final_E_postHit,...
+    e4_ver_initial_conditions_preHit, e4_ver_initial_conditions_postHit,...
+    e4_ver_NumberOfHits] ...
+                        = get_hit_map_yPy(vertical_step, parameters);
+
+
+parameters.Ex = min_possible_Ex;
+parameters.Ey = parameters.Et - parameters.Ex;
+Max_Energy_Y_line_coords = calcY_Energy_level(parameters);
+
+parameters.Ey = min_possible_Ey;
+parameters.Ex = parameters.Et - parameters.Ey;
+Min_Energy_Y_line_coords = calcY_Energy_level(parameters);
+%% plot the results:
+figure;
+hold on
+plot(Energy_Y_line_coords_energy1(:,1),Energy_Y_line_coords_energy1(:,2), 'k')
+plot(Energy_Y_line_coords_energy2(:,1),Energy_Y_line_coords_energy2(:,2), 'k')
+plot(Energy_Y_line_coords_energy3(:,1),Energy_Y_line_coords_energy3(:,2), 'k')
+plot(Energy_Y_line_coords_energy4(:,1),Energy_Y_line_coords_energy4(:,2), 'k')
+plot(Max_Energy_Y_line_coords(:,1),Max_Energy_Y_line_coords(:,2), '--k')
+plot(Min_Energy_Y_line_coords(:,1),Min_Energy_Y_line_coords(:,2), '--k')
+plot(e1_horz_results_preHit(:,2),e1_horz_results_preHit(:,4), 'rx')
+plot(e1_circ_results_preHit(:,2),e1_circ_results_preHit(:,4), 'bx')
+plot(e1_ver_results_preHit(:,2),e1_ver_results_preHit(:,4), 'gx')
+plot(e2_horz_results_preHit(:,2),e2_horz_results_preHit(:,4), 'r*')
+plot(e2_circ_results_preHit(:,2),e2_circ_results_preHit(:,4), 'b*')
+plot(e2_ver_results_preHit(:,2),e2_ver_results_preHit(:,4), 'g*')
+plot(e3_horz_results_preHit(:,2),e3_horz_results_preHit(:,4), 'r+')
+plot(e3_circ_results_preHit(:,2),e3_circ_results_preHit(:,4), 'b+')
+plot(e3_ver_results_preHit(:,2),e3_ver_results_preHit(:,4), 'g+')
+plot(e4_horz_results_preHit(:,2),e4_horz_results_preHit(:,4), 'r.')
+plot(e4_circ_results_preHit(:,2),e4_circ_results_preHit(:,4), 'b.')
+plot(e4_ver_results_preHit(:,2),e4_ver_results_preHit(:,4), 'g.')
+grid on
+legend('Y preHit energy1 levels', 'Y preHit energy2 levels' ,'Y preHit energy3 levels','Y preHit energy4 levels' ...
+    , 'Max possible Ey', 'Min possible Ey'...
+    ,'e1 Horizontal preHit', 'e1 Round preHit', 'e1 Vertical preHit'...
+    ,'e2 Horizontal preHit', 'e2 Round preHit', 'e2 Vertical preHit'...
+    ,'e3 Horizontal postHit', 'e3 Round postHit', 'e3 Vertical postHit'...
+    ,'e4 Horizontal postHit', 'e4 Round postHit', 'e4 Vertical postHit')
+xlabel("y")
+ylabel('P_y')
+xlim([-max_y, max_y]);
+ylim([-max_py, max_py]);
+hold off
+
+figure;
+hold on
+plot(Energy_Y_line_coords_energy1(:,1),Energy_Y_line_coords_energy1(:,2), 'k')
+plot(Energy_Y_line_coords_energy2(:,1),Energy_Y_line_coords_energy2(:,2), 'k')
+plot(Energy_Y_line_coords_energy3(:,1),Energy_Y_line_coords_energy3(:,2), 'k')
+plot(Energy_Y_line_coords_energy4(:,1),Energy_Y_line_coords_energy4(:,2), 'k')
+plot(Max_Energy_Y_line_coords(:,1),Max_Energy_Y_line_coords(:,2), '--k')
+plot(Min_Energy_Y_line_coords(:,1),Min_Energy_Y_line_coords(:,2), '--k')
+plot(e1_horz_results_postHit(:,2),e1_horz_results_postHit(:,4), 'rs')
+plot(e1_circ_results_postHit(:,2),e1_circ_results_postHit(:,4), 'bs')
+plot(e1_ver_results_postHit(:,2),e1_ver_results_postHit(:,4), 'gs')
+plot(e2_horz_results_postHit(:,2),e2_horz_results_postHit(:,4), 'ro')
+plot(e2_circ_results_postHit(:,2),e2_circ_results_postHit(:,4), 'bo')
+plot(e2_ver_results_postHit(:,2),e2_ver_results_postHit(:,4), 'go')
+plot(e3_horz_results_postHit(:,2),e3_horz_results_postHit(:,4), 'r^')
+plot(e3_circ_results_postHit(:,2),e3_circ_results_postHit(:,4), 'b^')
+plot(e3_ver_results_postHit(:,2),e3_ver_results_postHit(:,4), 'g^')
+plot(e4_horz_results_postHit(:,2),e4_horz_results_postHit(:,4), 'rd')
+plot(e4_circ_results_postHit(:,2),e4_circ_results_postHit(:,4), 'bd')
+plot(e4_ver_results_postHit(:,2),e4_ver_results_postHit(:,4), 'gd')
+grid on
+legend('Y preHit energy1 levels', 'Y preHit energy2 levels', 'Y preHit energy3 levels' ,'Y preHit energy4 levels' ...
+     , 'Max possible Ey', 'Min possible Ey'...
+    ,'e1 Horizontal postHit', 'e1 Round postHit', 'e1 Vertical postHit'...
+    ,'e2 Horizontal postHit', 'e2 Round postHit', 'e2 Vertical postHit'...
+    ,'e3 Horizontal postHit', 'e3 Round postHit', 'e3 Vertical postHit'...
+    ,'e4 Horizontal postHit', 'e4 Round postHit', 'e4 Vertical postHit')
+
+xlabel("y")
+ylabel('P_y')
+xlim([-max_y, max_y]);
+ylim([-max_py, max_py]);
+hold off
+
+
+
+%% find the index of a result:
+
+figure;
+hold on
+plot3(Energy_Y_line_coords_energy1(:,1),Energy_Y_line_coords_energy1(:,2),1:length(Energy_Y_line_coords_energy1(:,2)), 'k')
+plot3(Energy_Y_line_coords_energy2(:,1),Energy_Y_line_coords_energy2(:,2),1:length(Energy_Y_line_coords_energy2(:,2)), 'k')
+plot3(Energy_Y_line_coords_energy3(:,1),Energy_Y_line_coords_energy3(:,2),1:length(Energy_Y_line_coords_energy3(:,2)), 'k')
+plot3(Energy_Y_line_coords_energy4(:,1),Energy_Y_line_coords_energy4(:,2),1:length(Energy_Y_line_coords_energy4(:,2)) , 'k')
+plot(Max_Energy_Y_line_coords(:,1),Max_Energy_Y_line_coords(:,2), '--k')
+plot(Min_Energy_Y_line_coords(:,1),Min_Energy_Y_line_coords(:,2), '--k')
+plot3(e1_horz_results_postHit(:,2),e1_horz_results_postHit(:,4),1:length(e1_horz_results_postHit(:,2)), 'rs')
+plot3(e1_circ_results_postHit(:,2),e1_circ_results_postHit(:,4),1:length(e1_circ_results_postHit(:,2)), 'bs')
+plot3(e1_ver_results_postHit(:,2),e1_ver_results_postHit(:,4),1:length(e1_ver_results_postHit(:,2)), 'gs')
+plot3(e2_horz_results_postHit(:,2),e2_horz_results_postHit(:,4),1:length(e2_horz_results_postHit(:,2)), 'ro')
+plot3(e2_circ_results_postHit(:,2),e2_circ_results_postHit(:,4),1:length(e2_circ_results_postHit(:,2)), 'bo')
+plot3(e2_ver_results_postHit(:,2),e2_ver_results_postHit(:,4),1:length(e2_ver_results_postHit(:,2)), 'go')
+plot3(e3_horz_results_postHit(:,2),e3_horz_results_postHit(:,4),1:length(e3_horz_results_postHit(:,2)), 'r^')
+plot3(e3_circ_results_postHit(:,2),e3_circ_results_postHit(:,4),1:length(e3_circ_results_postHit(:,2)), 'b^')
+plot3(e3_ver_results_postHit(:,2),e3_ver_results_postHit(:,4),1:length(e3_ver_results_postHit(:,2)), 'g^')
+plot3(e4_horz_results_postHit(:,2),e4_horz_results_postHit(:,4),1:length(e4_horz_results_postHit(:,2)), 'rd')
+plot3(e4_circ_results_postHit(:,2),e4_circ_results_postHit(:,4),1:length(e4_circ_results_postHit(:,2)), 'bd')
+plot3(e4_ver_results_postHit(:,2),e4_ver_results_postHit(:,4),1:length(e4_ver_results_postHit(:,2)), 'gd')
+
+grid on
+legend('Y preHit energy1 levels', 'Y preHit energy2 levels', 'Y preHit energy3 levels' ,'Y preHit energy4 levels' ...
+     , 'Max possible Ey', 'Min possible Ey'...
+    ,'e1 Horizontal postHit', 'e1 Round postHit', 'e1 Vertical postHit'...
+    ,'e2 Horizontal postHit', 'e2 Round postHit', 'e2 Vertical postHit'...
+    ,'e3 Horizontal postHit', 'e3 Round postHit', 'e3 Vertical postHit'...
+    ,'e4 Horizontal postHit', 'e4 Round postHit', 'e4 Vertical postHit')
+
+xlabel("y")
+ylabel('P_y')
+xlim([-max_y, max_y]);
+ylim([-max_py, max_py]);
+view(0,90)
+hold off
+
+
+%% To see that the indexes are moving
+figure;
+hold on
+plot3(Energy_Y_line_coords_energy4(:,1),Energy_Y_line_coords_energy4(:,2),1:length(Energy_Y_line_coords_energy4(:,2)), 'k')
+plot3(e4_horz_results_preHit(:,2),e4_horz_results_preHit(:,4),1:length(e4_horz_results_preHit(:,2)), 'rs')
+% plot3(e4_horz_results_postHit(:,2),e4_horz_results_postHit(:,4),1:length(e4_horz_results_postHit(:,2)), 'bs')
+xlabel("y")
+ylabel('P_y')
+zlabel('index')
+view(0,0)
+grid on
+legend('energy level','pre_Hit', 'post_Hit');
+xlim([-max_y, max_y]);
+ylim([-max_py, max_py]);
+hold off
+
+%% functions:
+
+check_conditions_preHit = e2_circ_initial_conditions_preHit(265, :);
+[track_check_preHit, numOfRoundHit_check_preHit, numOfHorizontalHit_check_preHit, numOfVerticalHit_check_preHit] = ...
+                                        calc_track_until_px_is_zero(check_conditions_preHit, w0);
+
+check_conditions_postHit = e2_circ_initial_conditions_postHit(265, :);
+[track_check_postHit, numOfRoundHit_check_postHit, numOfHorizontalHit_check_postHit, numOfVerticalHit_check_postHit] = ...
+                                        calc_track_until_px_is_zero(check_conditions_postHit, w0);
+
+figure;
+hold on
+plot(vertical_step(:,1),vertical_step(:,2),'ro')
+plot(coords_circ(:,1),coords_circ(:,2),'ro')
+plot(horizontal_step(:,1),horizontal_step(:,2),'ro')
+plot(track_check_preHit(:,1),track_check_preHit(:,2),'bo')
+plot(track_check_postHit(:,1),track_check_postHit(:,2),'go')
+legend('step', 'step', 'step', 'track_check_preHit', 'track_check_postHit')
+xlim([-10,10])
+ylim([-10,10])
+hold off
+
+AA_coords_horz_pre_e1 = ...
+    convertToAngleActionCoordsOnHarmonicHamiltonian(e1_horz_results_preHit, w0);
+AA_coords_circ_pre_e1 = ...
+    convertToAngleActionCoordsOnHarmonicHamiltonian(e1_circ_results_preHit, w0);
+AA_coords_ver_pre_e1 = ...
+    convertToAngleActionCoordsOnHarmonicHamiltonian(e1_ver_results_preHit, w0);
+
+AA_coords_horz_post_e1 = ...
+    convertToAngleActionCoordsOnHarmonicHamiltonian(e1_horz_results_postHit, w0);
+AA_coords_circ_post_e1 = ...
+    convertToAngleActionCoordsOnHarmonicHamiltonian(e1_circ_results_postHit, w0);
+AA_coords_ver_post_e1 = ...
+    convertToAngleActionCoordsOnHarmonicHamiltonian(e1_ver_results_postHit, w0);
+
+vparams = struct();
+side = ["horz", "circ", "ver"];
+state = ["postHit", "preHit"];
+for ii=1:4
+    for jj=1:length(side)
+        for kk=1:length(state)
+            tmp_string_input = 'e' + string(ii)+ "_" + side(jj) + '_results_'+  state(kk);
+            eval('tmp = tmp_string_input')
+            var_tmp = 'e' + string(ii) + '_horz_results_postHit';
+            eval('AA_tmp = convertToAngleActionCoordsOnHarmonicHamiltonian(tmp_input, w0)');
+            vparams.('AA_' + 'e' + string(ii)+ "_" + side(jj) + '_'+  state(kk)) = ...
+                    AA_tmp;
+        end
+    end
+end
+
+figure;
+hold on
+plot(AA_coords_horz_pre_e1.Thetay./pi, AA_coords_horz_pre_e1.Jy, '+c')
+plot(AA_coords_circ_pre_e1.Thetay./pi, AA_coords_circ_pre_e1.Jy, '+m')
+plot(AA_coords_ver_pre_e1.Thetay./pi, AA_coords_ver_pre_e1.Jy, '+b')
+plot(AA_coords_horz_post_e1.Thetay./pi, AA_coords_horz_post_e1.Jy, 'or')
+plot(AA_coords_circ_post_e1.Thetay./pi, AA_coords_circ_post_e1.Jy, 'og')
+plot(AA_coords_ver_post_e1.Thetay./pi, AA_coords_ver_post_e1.Jy, 'ob')
+xlabel('\theta');
+ylabel('J');
+xlim([-pi pi]);
+ylim([0 10]);
+hold off
+
+% function [position,isterminal,direction] = EventsFunction(t,q) % q = [x, y, px, py];
+%     
+%     position = q(3);             % The value that we want to be zero
+%     isterminal = 1;   % Stop the integration
+%     direction = -1;   % Negative direction only
+% end
+
+
+
+
+
+
+
+
+
+
+
+
+
