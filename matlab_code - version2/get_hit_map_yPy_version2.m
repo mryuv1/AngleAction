@@ -1,7 +1,5 @@
 function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
-    
-    
-    
+        
     w1 = parameters.w1;
     w2 = parameters.w2;
     Et = parameters.Et;
@@ -27,9 +25,9 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
         EY_min = 0.5*(w2^2)*(y_w^2);
         
 
-%         if (idx>=222) && (idx<=230)
-%             disp(idx)
-%         end
+        % if (idx>=175) && (idx<=185)
+        %     disp(idx)
+        % end
 
         if (Ex<Ex_min) || (Ey<EY_min)
             continue
@@ -46,10 +44,10 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
         q0_left_up = [x_w; y_w; -pxw_abs; pyw_abs];
         q0_left_down = [x_w; y_w; -pxw_abs; -pyw_abs];
         
-        flag_track_right_up = checkIfInsideEuler(q0_right_up);
-        flag_track_right_down = checkIfInsideEuler(q0_right_down);
-        flag_track_left_up = checkIfInsideEuler(q0_left_up);
-        flag_track_left_down = checkIfInsideEuler(q0_left_down);
+        flag_track_right_up = checkIfInsideEuler_V2(q0_right_up, parameters);
+        flag_track_right_down = checkIfInsideEuler_V2(q0_right_down, parameters);
+        flag_track_left_up = checkIfInsideEuler_V2(q0_left_up, parameters);
+        flag_track_left_down = checkIfInsideEuler_V2(q0_left_down, parameters);
     
         % 4 solvers, some of them will stop fast
     
@@ -71,13 +69,14 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
         if ~flag_track_right_up
             [q0_track_right_up, q0_hits_round_right_up, ...
                 q0_hits_horizontal_right_up, q0_hits_vertical_right_up] ...
-                = calc_track_until_px_is_zero(q0_right_up, w0, 0);
+                = calc_track_until_px_is_zero_V2(q0_right_up, w0, 0, parameters);
             final_PreHit_right_up = q0_track_right_up(end, :);
+            final_PreHit_right_up(3:4) = -final_PreHit_right_up(3:4);
             p_postHit_right_up = return_momentum(-[q0_right_up(3) q0_right_up(4)], coords_to_use(w_idc, 3));
             q1_right_up = [x_w; y_w; p_postHit_right_up(1); p_postHit_right_up(2)];
             [q1_track_right_up, q1_hits_round_right_up, ...
                 q1_hits_horizontal_right_up, q1_hits_vertical_right_up] ...
-                = calc_track_until_px_is_zero(q1_right_up, w0, 1);
+                = calc_track_until_px_is_zero_V2(q1_right_up, w0, 1, parameters);
             final_PostHit_right_up = q1_track_right_up(end, :);
             
 %             figure;
@@ -85,7 +84,7 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
 %             plot(coords_to_use(:,1),coords_to_use(:,2),'ro')
 % %             plot(coords_circ(:,1),coords_circ(:,2),'ro')
 %             plot(q0_track_right_up(:,1),q0_track_right_up(:,2),'bo')
-%             plot(q1_track_right_up(:,1),q1_track_right_up(:,2),'go')
+%             % plot(q1_track_right_up(:,1),q1_track_right_up(:,2),'go')
 %             legend('step', 'step', 'preHit', 'postHit')
 %             xlim([-10,10])
 %             ylim([-10,10])
@@ -101,8 +100,8 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
             if (~limit_number_of_round_hits) || ...
             (total_number_of_round_hits_rightUp <= number_of_round_hits_treshold)
                 % locate results
-                final_E_preHit(idx) = calcTotalEnergy(final_PreHit_right_up);
-                final_E_postHit(idx) = calcTotalEnergy(final_PostHit_right_up);
+                final_E_preHit(idx) = calcTotalEnergy_V2(final_PreHit_right_up, parameters);
+                final_E_postHit(idx) = calcTotalEnergy_V2(final_PostHit_right_up, parameters);
                 results_preHit(idx, :) = final_PreHit_right_up;
                 results_postHit(idx, :) = final_PostHit_right_up;
                 initial_conditions_preHit(idx, :) = q0_right_up.';
@@ -119,9 +118,9 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
         if ~flag_track_right_down
             [q0_track_right_down, q0_hits_round_right_down, ...
                 q0_hits_horizontal_right_down, q0_hits_vertical_right_down] ...
-                = calc_track_until_px_is_zero(q0_right_down, w0, 0);
+                = calc_track_until_px_is_zero_V2(q0_right_down, w0, 0, parameters);
             final_PreHit_right_down = q0_track_right_down(end, :);
-
+            final_PreHit_right_down(3:4) = -final_PreHit_right_down(3:4);
 %             if idx==366
 %                 disp(idx)
 %             end
@@ -130,16 +129,16 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
     %         disp(idx)
             [q1_track_right_down, q1_hits_round_right_down, ...
                 q1_hits_horizontal_right_down, q1_hits_vertical_right_down] = ...
-                calc_track_until_px_is_zero(q1_right_down, w0, 1);
+                calc_track_until_px_is_zero_V2(q1_right_down, w0, 1, parameters);
             
             final_PostHit_right_down = q1_track_right_down(end, :);
             
-%             figure;
-%             hold on
-%             plot(coords_to_use(:,1),coords_to_use(:,2),'ro')
-%             plot(q0_track_right_down(:,1),q0_track_right_down(:,2),'bo')
-%             plot(q1_track_right_down(:,1),q1_track_right_down(:,2),'go')
-%             hold off
+            % figure;
+            % hold on
+            % plot(coords_to_use(:,1),coords_to_use(:,2),'ro')
+            % plot(q0_track_right_down(:,1),q0_track_right_down(:,2),'bo')
+            % plot(q1_track_right_down(:,1),q1_track_right_down(:,2),'go')
+            % hold off
             
             % locate results
             total_number_of_round_hits_rightDown = ...
@@ -152,8 +151,8 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
             if (~limit_number_of_round_hits) || ...
             (total_number_of_round_hits_rightDown <= number_of_round_hits_treshold)
 
-                final_E_preHit(idx) = calcTotalEnergy(final_PreHit_right_down);
-                final_E_postHit(idx) = calcTotalEnergy(final_PostHit_right_down);
+                final_E_preHit(idx) = calcTotalEnergy_V2(final_PreHit_right_down, parameters);
+                final_E_postHit(idx) = calcTotalEnergy_V2(final_PostHit_right_down, parameters);
                 results_preHit(idx, :) = final_PreHit_right_down;
                 results_postHit(idx, :) = final_PostHit_right_down;
                 initial_conditions_preHit(idx, :) = q0_right_down.';
@@ -171,13 +170,14 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
         if ~flag_track_left_up
             [q0_track_left_up, q0_hits_round_left_up, ...
                 q0_hits_horizontal_left_up, q0_hits_vertical_left_up] ...
-                = calc_track_until_px_is_zero(q0_left_up, w0, 0);
+                = calc_track_until_px_is_zero_V2(q0_left_up, w0, 0, parameters);
             final_PreHit_left_up = q0_track_left_up(end, :);
+            final_PreHit_left_up(3:4) = -final_PreHit_left_up(3:4);
             p_postHit_left_up = return_momentum(-[q0_left_up(3) q0_left_up(4)], coords_to_use(w_idc, 3));
             q1_left_up = [x_w; y_w; p_postHit_left_up(1); p_postHit_left_up(2)];
             [q1_track_left_up, q1_hits_round_left_up, ...
                 q1_hits_horizontal_left_up, q1_hits_vertical_left_up] ...
-                = calc_track_until_px_is_zero(q1_left_up, w0, 1);
+                = calc_track_until_px_is_zero_V2(q1_left_up, w0, 1, parameters);
             final_PostHit_left_up = q1_track_left_up(end, :);
 
 %             figure;
@@ -202,8 +202,8 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
             if (~limit_number_of_round_hits) || ...
             (total_number_of_round_hits_leftUp <= number_of_round_hits_treshold)
 
-                final_E_preHit(idx) = calcTotalEnergy(final_PreHit_left_up);
-                final_E_postHit(idx) = calcTotalEnergy(final_PostHit_left_up);
+                final_E_preHit(idx) = calcTotalEnergy_V2(final_PreHit_left_up, parameters);
+                final_E_postHit(idx) = calcTotalEnergy_V2(final_PostHit_left_up, parameters);
                 results_preHit(idx, :) = final_PreHit_left_up;
                 results_postHit(idx, :) = final_PostHit_left_up;
                 initial_conditions_preHit(idx, :) = q0_left_up.';
@@ -221,13 +221,14 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
     
             [q0_track_left_down, q0_hits_round_left_down, ...
                 q0_hits_horizontal_left_down, q0_hits_vertical_left_down]...
-                = calc_track_until_px_is_zero(q0_left_down, w0, 0);
+                = calc_track_until_px_is_zero_V2(q0_left_down, w0, 0, parameters);
             final_PreHit_left_down = q0_track_left_down(end, :);
+            final_PreHit_left_down(3:4) = -final_PreHit_left_down(3:4);
             p_postHit_left_down = return_momentum(-[q0_left_down(3) q0_left_down(4)], coords_to_use(w_idc, 3));
             q1_left_down = [x_w; y_w; p_postHit_left_down(1); p_postHit_left_down(2)];
             [q1_track_left_down, q1_hits_round_left_down, ...
                 q1_hits_horizontal_left_down, q1_hits_vertical_left_down]...
-                = calc_track_until_px_is_zero(q1_left_down, w0, 1);
+                = calc_track_until_px_is_zero_V2(q1_left_down, w0, 1, parameters);
             
             final_PostHit_left_down = q1_track_left_down(end, :);
     
@@ -242,8 +243,8 @@ function Estruct = get_hit_map_yPy_version2(coords_to_use, parameters)
             if (~limit_number_of_round_hits) || ...
             (total_number_of_round_hits_leftDown <= number_of_round_hits_treshold)
                 
-                final_E_preHit(idx) = calcTotalEnergy(final_PreHit_left_down);
-                final_E_postHit(idx) = calcTotalEnergy(final_PostHit_left_down);
+                final_E_preHit(idx) = calcTotalEnergy_V2(final_PreHit_left_down, parameters);
+                final_E_postHit(idx) = calcTotalEnergy_V2(final_PostHit_left_down, parameters);
                 initial_conditions_preHit(idx, :) = q0_left_down.';
                 initial_conditions_postHit(idx, :) = q1_left_down.';
                 results_preHit(idx, :) = final_PreHit_left_down;

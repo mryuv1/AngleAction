@@ -1,6 +1,6 @@
-function inside = checkIfInsideEuler(q) % q = [x, y, px, py];
+function inside = checkIfInsideEuler_V2(q, parameters) % q = [x, y, px, py];
     epsilon = 1e-4;
-    myParams = params();
+    myParams = parameters;
     circle_center = myParams.circle_center;
     radius = myParams.radius;
     % check that the track isn't inside the step, with euiler aproximation
